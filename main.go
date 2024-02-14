@@ -15,6 +15,8 @@ type MBR struct {
 	MbrDiskSignature int64
 }
 
+var archivoBinarioDisco string = "disk.bin"
+
 func main() {
 	limpiarConsola()
 	PrintCopyright()
@@ -28,7 +30,7 @@ func main() {
 
 	comando, path := parseCommand(input)
 	if comando != "EXECUTE" || path == "" {
-		fmt.Println("Comando no reconocido o ruta de archivo faltante. Uso: EXECUTE <ruta_al_archivo_sdaa>")
+		fmt.Println("Comando no reconocido o ruta de archivo faltante. Uso: EXECUTE <ruta_al_archivo_de_scripts>")
 		return
 	}
 
@@ -48,21 +50,31 @@ func main() {
 
 	for _, command := range commands {
 		cmd := string(command)
-		//fmt.Printf("Executing command: %s\n", cmd)
 		if cmd == "MKDISK" {
-			mkdisk("disk.adsj")
+			mkdisk(archivoBinarioDisco)
 		} else if cmd == "REP" {
-			printMBR("disk.adsj")
+			printMBR(archivoBinarioDisco)
 		}
 	}
 }
 
 func parseCommand(input string) (string, string) {
-	parts := strings.SplitN(input, " ", 2)
+	parts := strings.Fields(input)
 	if len(parts) < 2 {
 		return "", ""
 	}
-	return parts[0], parts[1]
+
+	command := parts[0]
+	var path string
+
+	for _, part := range parts[1:] {
+		if strings.HasPrefix(part, "-path=") {
+			path = strings.TrimPrefix(part, "-path=")
+			break
+		}
+	}
+
+	return command, path
 }
 
 func mkdisk(filename string) {
